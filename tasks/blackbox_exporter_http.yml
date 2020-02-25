@@ -1,0 +1,38 @@
+---
+
+- name: BLACKBOX EXPORTER TASK | Get Service IDs of Domains That Should Be Deleted from Consul
+  shell: curl -s -L -u {{ consul_basic_auth_user | default([]) }}:{{ consul_basic_auth_password | default([]) }} {{ consul_url }}/v1/agent/services | jq -r '.[] | select (.Tags[] | contains("domain-{{ item }}")) | .ID'
+  register: service_ids
+  become: false
+  delegate_to: localhost
+  when: blackbox_sites_delete is defined and blackbox_sites_delete != ""
+  with_items:
+  - "{{ blackbox_sites_delete }}"
+
+- name: BLACKBOX EXPORTER TASK | Delete Domains from Consul
+  uri:
+    url: "{{ consul_url }}/v1/agent/service/deregister/{{ item }}"
+    method: PUT
+    user: "{{ consul_basic_auth_user | default(omit) }}"
+    password: "{{ consul_basic_auth_password | default(omit) }}"
+    follow_redirects: all
+  become: false
+  when: (blackbox_sites_delete is defined and blackbox_sites_delete != "") and (service_ids is defined and item != "")
+  delegate_to: localhost
+  with_items:
+  - "{{ service_ids.results | map(attribute='stdout_lines') | list | flatten }}"
+
+- name: BLACKBOX EXPORTER TASK | Add Domains to Consul [HTTP Check]
+  uri:
+    url: "{{ consul_url }}/v1/agent/service/register"
+    method: PUT
+    user: "{{ consul_basic_auth_user | default(omit) }}"
+    password: "{{ consul_basic_auth_password | default(omit) }}"
+    body: "{{ lookup('template', consul_blackbox_exporter_template_site) }}"
+    body_format: json
+    follow_redirects: all
+  become: false
+  delegate_to: localhost
+  when: blackbox_http_check_sites is defined and blackbox_http_check_sites != ""
+  with_items:
+  - "{{ blackbox_sites }}"

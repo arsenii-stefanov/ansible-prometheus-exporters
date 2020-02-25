@@ -1,0 +1,13 @@
+{
+  "ID": "{{ item.value.domain }}_{{ item.key }}",
+  "Name": "{{ item.value.domain }}_{{ item.key }}",
+  "Tags": [
+    "prometheus-exporters",
+    "blackbox_exporter",
+    "parent-{{ item.value.parent }}",
+    "module-{{ item.value.module }}",
+    "domain-{{ item.value.domain }}",
+    "url-{{ item.value.url }}"
+  ],
+  "Address": "{{ item.value.address }}"
+}

@@ -1,0 +1,69 @@
+---
+
+- name: BLACKBOX EXPORTER TASK | Download Exporter
+  get_url:
+    url: "{{ blackbox_exporter_tar_url }}"
+    dest: "/tmp/blackbox_exporter.tar.gz"
+    mode: "0644"
+
+- name: BLACKBOX EXPORTER TASK | Extract Archive
+  unarchive:
+    src: "/tmp/blackbox_exporter.tar.gz"
+    dest: "/usr/sbin"
+    remote_src: true
+    extra_opts:
+    - "--strip-components=1"
+    - "--wildcards"
+    - "*/blackbox_exporter"
+  register: binary
+
+- name: BLACKBOX EXPORTER TASK | Ensure that the Log Directory Exists
+  file:
+    path: "/var/log/blackbox_exporter"
+    state: directory
+    owner: root
+    group: root 
+    mode: "0755"
+
+- name: BLACKBOX EXPORTER TASK | Ensure That Systemd Service Exists
+  template:
+    src: "{{ blackbox_exporter_systemd_config }}"
+    dest: /etc/systemd/system/blackbox_exporter.service
+    owner: root
+    group: root
+    mode: "0644"
+  register: service
+  when: ansible_service_mgr == "systemd"
+
+- name: BLACKBOX EXPORTER TASK | Enable Systemd Service
+  systemd:
+    daemon_reload: yes
+    name: blackbox_exporter
+    enabled: yes
+    state: restarted
+  when: binary.changed or service.changed
+
+- name: BLACKBOX EXPORTER TASK | Ensure That Initd Service Exists
+  template:
+    src: "{{ blackbox_exporter_initd_config }}"
+    dest: /etc/init.d/blackbox_exporter
+    owner: root
+    group: root
+    mode: "0644"
+  register: service
+  when: ansible_service_mgr != "systemd"
+
+- name: BLACKBOX EXPORTER TASK | Restart the Initd Service
+  service:
+    name: blackbox_exporter
+    state: restarted
+  when: (ansible_service_mgr != "systemd" and binary.changed) or (ansible_service_mgr != "systemd" and service.changed)
+
+#- name: BLACKBOX EXPORTER TASK | Blackbox Exporter Config
+#  template:
+#    src: "{{ item.exporter_name }}/blackbox_exporter.cnf.j2"
+#    dest: "{{ mysql_exporter_config }}"
+#    owner: root
+#    group: root
+#    mode: 0600
+#  register: mysql_creds

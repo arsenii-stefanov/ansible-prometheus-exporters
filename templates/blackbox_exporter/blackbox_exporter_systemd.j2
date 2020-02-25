@@ -1,0 +1,18 @@
+######################################
+###                                ###
+###       MANAGED BY ANSIBLE       ###
+###     (DO NOT EDIT MANUALLY)     ###
+###                                ###
+######################################
+
+[Unit]
+Description=Prometheus Blackbox Exporter
+
+[Service]
+User=root
+ExecStart={{ blackbox_exporter_binary }} {{ blackbox_exporter_agrs }}
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

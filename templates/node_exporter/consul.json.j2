@@ -1,0 +1,12 @@
+{
+  "ID": "{{ inventory_hostname }}_node_exporter",
+  "Name": "{{ inventory_hostname }}_node_exporter",
+  "Tags": [
+    "prometheus-exporters",
+    "node_exporter",
+    "hostname-{{ inventory_hostname }}",
+    "cpu100-{{ cpu100 | default('false') }}"
+  ],
+  "Address": "{{ ansible_host }}",
+  "Port": {{ node_exporter_port }}
+}

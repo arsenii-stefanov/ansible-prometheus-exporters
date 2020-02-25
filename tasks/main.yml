@@ -1,0 +1,21 @@
+---
+
+- name: INCLUDE TASK | Install NODE Exporter
+  include_tasks: node_exporter.yml
+  when: install_node_exporter is defined and install_node_exporter == true
+
+- name: INCLUDE TASK | BLACKBOX Exporter ICMP
+  include_tasks: blackbox_exporter_icmp.yml
+  when: blackbox_exporter_icmp is defined and blackbox_exporter_icmp == true
+
+- name: INCLUDE TASK | BLACKBOX Exporter HTTP
+  include_tasks: blackbox_exporter_http.yml
+  when: blackbox_exporter_http is defined and blackbox_exporter_http == true
+
+- name: INCLUDE TASK | Install MYSQL Exporter
+  include_tasks: mysql_exporter.yml
+  when: (install_mysql_exporter is defined and install_mysql_exporter == true) and (mysql_exporter_installation_type is defined and mysql_exporter_installation_type == 'host')
+
+- name: INCLUDE TASK | Install MYSQL Exporter [Docker]
+  include_tasks: mysql_exporter_docker.yml
+  when: (install_mysql_exporter is defined and install_mysql_exporter == true) and (mysql_exporter_installation_type is defined and mysql_exporter_installation_type == 'docker')

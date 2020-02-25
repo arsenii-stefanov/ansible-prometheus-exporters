@@ -1,0 +1,48 @@
+---
+
+consul_url: https://consul.example.com
+
+# You should enable installation of exporters manually by overriding these variables
+install_node_exporter: false
+blackbox_exporter_icmp: false
+blackbox_exporter_http: false
+install_mysql_exporter: false
+mysql_exporter_installation_type: ""    # host/docker; for 'docker', your server should have Docker installed
+
+################################
+###     CONSUL TEMPLATES     ###
+################################
+
+consul_node_exporter_template: "node_exporter/consul.json.j2"
+consul_blackbox_exporter_template_server: "blackbox_exporter/consul_icmp.json.j2"
+consul_blackbox_exporter_template_site: "blackbox_exporter/consul_http.json.j2"
+consul_mysql_exporter_template: "mysql_exporter/consul.json.j2"
+consul_mysql_exporter_docker_template: "mysql_exporter/consul_docker.json.j2"
+
+#############################
+###     NODE EXPORTER     ###
+#############################
+node_exporter_tar_url: "https://github.com/prometheus/node_exporter/releases/download/v0.18.1/node_exporter-0.18.1.linux-amd64.tar.gz"
+node_textfile_collector_directory: "/var/lib/node_exporter/textfile_collector"
+node_textfile_collector_cron_jobs: ""
+node_exporter_port: 9100
+node_exporter_binary: "/usr/sbin/node_exporter"
+node_exporter_agrs: '--collector.diskstats.ignored-devices="^(ram|loop|fd|(h|s|v|xv)|nvme\\d+n\\d+p)\\d+$"  --collector.filesystem.ignored-fs-types="^(sys|proc|auto)fs$"  --collector.filesystem.ignored-mount-points="^/(sys|proc|dev|snap)($|/)" --collector.textfile.directory="{{ node_textfile_collector_directory }}" --web.listen-address=0.0.0.0:{{ node_exporter_port }}'
+node_exporter_systemd_config: "node_exporter/node_exporter_systemd.j2"
+node_exporter_initd_config: "node_exporter/node_exporter_initd.j2"
+
+##############################
+###     MYSQL EXPORTER     ###
+##############################
+mysql_exporter_tar_url: "https://github.com/prometheus/mysqld_exporter/releases/download/v0.12.1/mysqld_exporter-0.12.1.linux-amd64.tar.gz"
+mysql_exporter_port: 9104
+mysql_exporter_binary: "/usr/sbin/mysql_exporter"
+mysql_exporter_config: "/root/.mysql_exporter.cnf"
+mysql_exporter_agrs: '--web.listen-address=0.0.0.0:{{ mysql_exporter_port }} --config.my-cnf={{ mysql_exporter_config }} -collect.info_schema.tables=false'
+mysql_exporter_systemd_config: "mysql_exporter/mysql_exporter_systemd.j2"
+mysql_exporter_initd_config: "mysql_exporter/mysql_exporter_initd.j2"
+mysql_exporter_host: 127.0.0.1
+mysql_exporter_port: 3306
+mysql_exporter_protocol: tcp
+mysql_exporter_user: ""
+mysql_exporter_password: ""

@@ -1,0 +1,19 @@
+######################################
+###                                ###
+###       MANAGED BY ANSIBLE       ###
+###     (DO NOT EDIT MANUALLY)     ###
+###                                ###
+######################################
+
+[Unit]
+Description=Prometheus Node Exporter
+
+[Service]
+User=root
+ExecStart={{ node_exporter_binary }} {{ node_exporter_agrs }}
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
+

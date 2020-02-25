@@ -1,0 +1,14 @@
+---
+
+- name: BLACKBOX EXPORTER TASK | Add Server to Consul [ICMP Ping Check]
+  uri:
+    url: "{{ consul_url }}/v1/agent/service/register"
+    method: PUT
+    user: "{{ consul_basic_auth_user | default(omit) }}"
+    password: "{{ consul_basic_auth_password | default(omit) }}"
+    body: "{{ lookup('template', consul_blackbox_exporter_template_server) }}"
+    body_format: json
+    follow_redirects: all
+  become: false
+  delegate_to: localhost
+  when: blackbox_do_not_add_server_to_consul is not defined or (blackbox_do_not_add_server_to_consul is defined and blackbox_do_not_add_server_to_consul == false)

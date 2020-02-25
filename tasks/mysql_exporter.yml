@@ -1,0 +1,81 @@
+---
+
+- name: MYSQL EXPORTER TASK | Download Exporter
+  get_url:
+    url: "{{ mysql_exporter_tar_url }}"
+    dest: "/tmp/mysql_exporter.tar.gz"
+    mode: "0644"
+
+- name: MYSQL EXPORTER TASK | Extract Archive
+  unarchive:
+    src: "/tmp/mysql_exporter.tar.gz"
+    dest: "/usr/sbin"
+    remote_src: true
+    extra_opts:
+    - "--strip-components=1"
+    - "--wildcards"
+    - "*/mysql_exporter"
+  register: binary
+
+- name: MYSQL EXPORTER TASK | Ensure that the Log Directory Exists
+  file:
+    path: "/var/log/mysql_exporter"
+    state: directory
+    owner: root
+    group: root 
+    mode: "0755"
+
+- name: MYSQL EXPORTER TASK | Ensure That Systemd Service Exists
+  template:
+    src: "{{ mysql_exporter_systemd_config }}"
+    dest: /etc/systemd/system/mysql_exporter.service
+    owner: root
+    group: root
+    mode: "0644"
+  register: service
+  when: ansible_service_mgr == "systemd"
+
+- name: MYSQL EXPORTER TASK | Enable Systemd Service
+  systemd:
+    daemon_reload: yes
+    name: mysql_exporter
+    enabled: yes
+    state: restarted
+  when: binary.changed or service.changed
+
+- name: MYSQL EXPORTER TASK | Ensure That Initd Service Exists
+  template:
+    src: "{{ mysql_exporter_initd_config }}"
+    dest: /etc/init.d/mysql_exporter
+    owner: root
+    group: root
+    mode: "0644"
+  register: service
+  when: ansible_service_mgr != "systemd"
+
+- name: MYSQL EXPORTER TASK | Restart the Initd Service
+  service:
+    name: mysql_exporter
+    state: restarted
+  when: (ansible_service_mgr != "systemd" and binary.changed) or (ansible_service_mgr != "systemd" and service.changed)
+
+- name: MYSQL EXPORTER TASK | MySQL Exporter Config
+  template:
+    src: "mysql_exporter/mysql_exporter.cnf.j2"
+    dest: "{{ mysql_exporter_config }}"
+    owner: root
+    group: root
+    mode: 0600
+  register: mysql_creds
+  
+- name: MYSQL EXPORTER TASK | Add Services to Consul
+  uri:
+    url: "{{ consul_url }}/v1/agent/service/register"
+    method: PUT
+    user: "{{ consul_basic_auth_user | default(omit) }}"
+    password: "{{ consul_basic_auth_password | default(omit) }}"
+    body: "{{ lookup('template', consul_mysql_exporter_template) }}"
+    body_format: json
+  become: false
+  delegate_to: localhost
+  when: mysql_exporter_do_not_add_service_to_consul is not defined or (mysql_exporter_do_not_add_service_to_consul is defined and mysql_exporter_do_not_add_service_to_consul == false)

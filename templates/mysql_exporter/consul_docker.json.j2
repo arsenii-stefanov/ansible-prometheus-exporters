@@ -1,0 +1,11 @@
+{
+  "ID": "{{ item.mysql_host }}_mysql_exporter",
+  "Name": "{{ item.mysql_host }}_mysql_exporter",
+  "Tags": [
+    "prometheus-exporters",
+    "mysql_exporter",
+    "hostname-{{ item.mysql_host }}",
+  ],
+  "Address": "{{ ansible_host }}",
+  "Port": {{ item.scrape_port }}
+}

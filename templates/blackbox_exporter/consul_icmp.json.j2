@@ -1,0 +1,11 @@
+{
+  "ID": "{{ inventory_hostname }}_blackbox_exporter",
+  "Name": "{{ inventory_hostname }}_blackbox_exporter",
+  "Tags": [
+    "prometheus-exporters",
+    "blackbox_exporter",
+    "{{ inventory_hostname }}",
+    "hostname-{{ inventory_hostname }}"
+  ],
+  "Address": "{{ ansible_host }}"
+}
