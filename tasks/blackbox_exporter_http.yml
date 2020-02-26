@@ -34,5 +34,5 @@
   become: false
   delegate_to: localhost
   when: blackbox_http_check_sites is defined and blackbox_http_check_sites != ""
-  with_items:
-  - "{{ blackbox_sites }}"
+  with_dict:
+  - "{{ blackbox_http_check_sites }}"

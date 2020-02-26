@@ -4,10 +4,12 @@
   "Tags": [
     "prometheus-exporters",
     "blackbox_exporter",
-    "parent-{{ item.value.parent }}",
     "module-{{ item.value.module }}",
     "domain-{{ item.value.domain }}",
-    "url-{{ item.value.url }}"
+    "url-{{ item.value.url }}",
+    "host-{{ item.value.host }}",
+    "load-balancer-{{ item.value.load_balancer }}",
+    "env-{{ item.value.env }}"
   ],
-  "Address": "{{ item.value.address }}"
+  "Address": "{{ item.value.domain }}"
 }
