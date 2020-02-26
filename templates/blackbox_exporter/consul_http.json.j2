@@ -5,11 +5,17 @@
     "prometheus-exporters",
     "blackbox_exporter",
     "module-{{ item.value.module }}",
-    "domain-{{ item.value.domain }}",
     "url-{{ item.value.url }}",
-    "host-{{ item.value.host }}",
+{% if item.value.host is defined and item.value.host != "" %}
+    "hostname-{{ item.value.host }}",
+{% endif %}
+{% if item.value.load_balancer is defined and item.value.load_balancer != "" %}
     "load-balancer-{{ item.value.load_balancer }}",
-    "env-{{ item.value.env }}"
+{% endif %}
+{% if item.value.env is defined and item.value.env != "" %}
+    "env-{{ item.value.env }}",
+{% endif %}
+    "domain-{{ item.value.domain }}"
   ],
   "Address": "{{ item.value.domain }}"
 }
