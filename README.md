@@ -257,9 +257,9 @@ blackbox_sites:
 
 ### Specify sites to delete from monitoring
 blackbox_sites_delete:
-- old.example.com
-- api-old.example.com
-- demo.example.com
+- https://old.example.com
+- https://api-old.example.com/v1/healthcheck
+- https://demo.example.com
 ```
 
 * `FILE: {{ playbook_dir }}/prometheus-exporters-secrets.yml`

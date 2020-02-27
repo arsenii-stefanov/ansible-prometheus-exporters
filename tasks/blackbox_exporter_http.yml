@@ -1,7 +1,7 @@
 ---
 
 - name: BLACKBOX EXPORTER TASK | Get Service IDs of Domains That Should Be Deleted from Consul
-  shell: curl -s -L -u {{ consul_basic_auth_user | default([]) }}:{{ consul_basic_auth_password | default([]) }} {{ consul_url }}/v1/agent/services | jq -r '.[] | select (.Tags[] | contains("domain-{{ item }}")) | .ID'
+  shell: curl -s -L -u {{ consul_basic_auth_user | default([]) }}:{{ consul_basic_auth_password | default([]) }} {{ consul_url }}/v1/agent/services | jq -r '.[] | select (.Tags[] | contains("url-{{ item }}")) | .ID'
   register: service_ids
   become: false
   delegate_to: localhost
