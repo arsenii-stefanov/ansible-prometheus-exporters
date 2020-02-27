@@ -9,6 +9,9 @@
 {% if item.value.host is defined and item.value.host != "" %}
     "hostname-{{ item.value.host }}",
 {% endif %}
+{% if item.value.main_domain is defined and item.value.main_domain != "" %}
+    "main_domain-{{ item.value.main_domain }}",
+{% endif %}
 {% if item.value.load_balancer is defined and item.value.load_balancer != "" %}
     "load-balancer-{{ item.value.load_balancer }}",
 {% endif %}
