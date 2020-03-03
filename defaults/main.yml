@@ -41,8 +41,8 @@ mysql_exporter_config: "/root/.mysql_exporter.cnf"
 mysql_exporter_agrs: '--web.listen-address=0.0.0.0:{{ mysql_exporter_port }} --config.my-cnf={{ mysql_exporter_config }} -collect.info_schema.tables=false'
 mysql_exporter_systemd_config: "mysql_exporter/mysql_exporter_systemd.j2"
 mysql_exporter_initd_config: "mysql_exporter/mysql_exporter_initd.j2"
-mysql_exporter_host: 127.0.0.1
-mysql_exporter_port: 3306
-mysql_exporter_protocol: tcp
+mysql_exporter_target_host: 127.0.0.1
+mysql_exporter_target_port: 3306
+mysql_exporter_target_protocol: tcp
 mysql_exporter_user: ""
 mysql_exporter_password: ""
