@@ -278,12 +278,12 @@ mysql_exporter_password: qwerty12345
 ```
 # Install Python modules if you deploy Prometheus exporters in Docker
 - src: https://github.com/arsenii-stefanov/ansible-python.git
-  path: roles
   scm: git
+  version: master
 # Set up Prometheus Exporters
 - src: https://github.com/arsenii-stefanov/ansible-prometheus-exporters.git
-  path: roles
   scm: git
+  version: master
 ```
 
 
