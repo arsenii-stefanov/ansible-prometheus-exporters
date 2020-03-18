@@ -3,6 +3,8 @@ Ansible-Prometheus-Exporters
 
 This role installs Prometheus exporters on the nodes specified in your Ansible inventory file
 
+#### It is highly recommended that you do not directly access this repository from your CI/CD jobs. Make a fork in your project's SCM instead. By doing so, you make sure that your cluster will not be broken in case one of the new commits appear to have a bug. You can keep the fork synchronized with the origin manually
+
 ## Components
 
 * `Node Exporter`: basic server metrics (exporter installation and optional Consul SD config)
@@ -261,6 +263,31 @@ blackbox_sites_delete:
 - https://api-old.example.com/v1/healthcheck
 - https://demo.example.com
 ```
+
+> Google Cloud Stackdriver Exporter
+
+> https://github.com/frodenas/stackdriver_exporter
+
+```
+install_stackdriver_exporter: true
+
+stackdriver_exporter_docker_opts: 
+- container_name: "stackdriver-exporter"
+  image_name: "frodenas/stackdriver-exporter"
+  image_tag: "v0.6.0"
+  ports: ["9255:9255"]
+  networks:
+    - name: "prometheus"
+  purge_networks: true
+  env_vars:
+    STACKDRIVER_EXPORTER_GOOGLE_PROJECT_ID="my-gcp-project"
+    STACKDRIVER_EXPORTER_MONITORING_METRICS_INTERVAL="1m"
+    STACKDRIVER_EXPORTER_WEB_LISTEN_ADDRESS=":9255"
+    STACKDRIVER_EXPORTER_WEB_TELEMETRY_PATH="/metrics"
+    STACKDRIVER_EXPORTER_MONITORING_METRICS_TYPE_PREFIXES="loadbalancing.googleapis.com"
+```
+
+In order to be able to collect Stackdriver metrics from Google API, your Prometheus server should have a service account with the 'Monitoring Viewer' IAM role
 
 * `FILE: {{ playbook_dir }}/prometheus-exporters-secrets.yml`
 

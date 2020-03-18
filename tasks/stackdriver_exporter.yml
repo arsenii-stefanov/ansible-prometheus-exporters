@@ -1,0 +1,20 @@
+---
+
+- name: STACKDRIVER EXPORTER TASK | Start Docker Containers
+  docker_container:
+    name: "{{ item.container_name }}"
+    image: "{{ item.image_name }}:{{ item.image_tag }}"
+    state: started
+    restart_policy: always
+    detach: yes
+    interactive: yes
+    tty: yes
+    command: "{{ item.command | default(omit) }}"
+    ports: "{{ item.ports | default(omit) }}"
+    volumes: "{{ item.volumes | default(omit) }}"
+    log_driver: "{{ item.log_driver | default(omit) }}"
+    network_mode: "{{ item.network_mode | default('bridge') }}"
+    networks: "{{ item.networks | default(omit) }}"
+    purge_networks: "{{ item.purge_networks | default(omit) }}"
+    env: "{{ item.env_vars | default(omit) }}"
+  with_items: "{{ stackdriver_exporter_docker_opts }}"

@@ -19,3 +19,7 @@
 - name: INCLUDE TASK | Install MYSQL Exporter [Docker]
   include_tasks: mysql_exporter_docker.yml
   when: (install_mysql_exporter is defined and install_mysql_exporter == true) and (mysql_exporter_installation_type is defined and mysql_exporter_installation_type == 'docker')
+
+- name: INCLUDE TASK | Install Stackdriver Exporter
+  include_tasks: stackdriver_exporter.yml
+  when: install_stackdriver_exporter is defined and install_stackdriver_exporter == true
