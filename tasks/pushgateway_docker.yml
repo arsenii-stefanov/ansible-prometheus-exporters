@@ -1,0 +1,70 @@
+---
+
+- name: PUSHGATEWAY DOCKER TASK | Start Docker Containers
+  docker_container:
+    name: "{{ item.container_name }}"
+    image: "{{ item.image_name }}:{{ item.image_tag }}"
+    state: started
+    restart_policy: always
+    detach: yes
+    interactive: yes
+    tty: yes
+    command: "{{ item.command | default(omit) }}"
+    ports: "{{ item.ports | default(omit) }}"
+    volumes: "{{ item.volumes | default(omit) }}"
+    log_driver: "{{ item.log_driver | default(omit) }}"
+    network_mode: "{{ item.network_mode | default('bridge') }}"
+    networks: "{{ item.networks | default(omit) }}"
+    purge_networks: "{{ item.purge_networks | default(omit) }}"
+    env: "{{ item.env_vars | default(omit) }}"
+  with_items: "{{ pushgateway_docker_opts }}"
+
+- name: PUSHGATEWAY DOCKER TASK | Add Services to Consul
+  uri:
+    url: "{{ consul_url }}/v1/agent/service/register"
+    method: PUT
+    user: "{{ consul_basic_auth_user | default(omit) }}"
+    password: "{{ consul_basic_auth_password | default(omit) }}"
+    body: "{{ lookup('template', consul_pushgateway_template) }}"
+    body_format: json
+  become: false
+  delegate_to: localhost
+  when: pushgateway_do_not_add_service_to_consul is not defined or (pushgateway_do_not_add_service_to_consul is defined and pushgateway_do_not_add_service_to_consul == false)
+
+- name: PUSHGATEWAY DOCKER TASK | Ensure That the Directory for Custom Scripts Exists
+  file:
+    path: "{{ pushgateway_custom_scripts_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  when: upload_pushgateway_custom_scripts is defined and upload_pushgateway_custom_scripts == true
+
+- name: PUSHGATEWAY DOCKER TASK | Ensure That Custom Scripts Exist
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: "{{ item.mode }}"
+  with_items: "{{ pushgateway_custom_scripts }}"
+  when: upload_pushgateway_custom_scripts is defined and upload_pushgateway_custom_scripts == true
+
+- name: PUSHGATEWAY DOCKER TASK | Ensure That SystemD Configs for Custom Scripts Exist
+  template:
+    src: "{{ pushgateway_custom_scripts_systemd_template }}"
+    dest: "/etc/systemd/system/{{ item.systemd_name }}.service"
+    owner: root
+    group: root
+    mode: "0644"
+  register: service
+  with_items: "{{ pushgateway_custom_scripts }}"
+  when: (upload_pushgateway_custom_scripts is defined and upload_pushgateway_custom_scripts == true) and (ansible_service_mgr == "systemd")
+
+- name: PUSHGATEWAY DOCKER TASK | Enable Systemd Service
+  systemd:
+    daemon_reload: yes
+    name: pushgateway
+    enabled: yes
+    state: restarted
+  when: binary.changed or service.changed

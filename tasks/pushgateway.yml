@@ -1,0 +1,110 @@
+---
+
+- name: PUSHGATEWAY TASK | Download Pushgateway
+  get_url:
+    url: "{{ pushgateway_tar_url }}"
+    dest: "/tmp/pushgateway.tar.gz"
+    mode: "0644"
+
+- name: PUSHGATEWAY TASK | Extract Archive
+  unarchive:
+    src: "/tmp/pushgateway.tar.gz"
+    dest: "/usr/sbin"
+    remote_src: true
+    extra_opts:
+    - "--strip-components=1"
+    - "--wildcards"
+    - "*/pushgateway"
+  register: binary
+
+- name: PUSHGATEWAY TASK | Ensure that the Log Directory Exists
+  file:
+    path: "/var/log/pushgateway"
+    state: directory
+    owner: root
+    group: root 
+    mode: "0755"
+
+- name: PUSHGATEWAY | Ensure That Systemd Service Exists
+  template:
+    src: "{{ pushgateway_systemd_config }}"
+    dest: /etc/systemd/system/pushgateway.service
+    owner: root
+    group: root
+    mode: "0644"
+  register: service
+  when: ansible_service_mgr == "systemd"
+
+- name: PUSHGATEWAY TASK | Enable Systemd Service
+  systemd:
+    daemon_reload: yes
+    name: pushgateway
+    enabled: yes
+    state: restarted
+  when: binary.changed or service.changed
+
+- name: PUSHGATEWAY TASK | Ensure That Initd Service Exists
+  template:
+    src: "{{ pushgateway_initd_config }}"
+    dest: /etc/init.d/pushgateway
+    owner: root
+    group: root
+    mode: "0644"
+  register: service
+  when: ansible_service_mgr != "systemd"
+
+- name: PUSHGATEWAY TASK | Restart the Initd Service
+  service:
+    name: pushgateway
+    state: restarted
+  when: (ansible_service_mgr != "systemd" and binary.changed) or (ansible_service_mgr != "systemd" and service.changed)
+  
+- name: PUSHGATEWAY TASK | Add Services to Consul
+  uri:
+    url: "{{ consul_url }}/v1/agent/service/register"
+    method: PUT
+    user: "{{ consul_basic_auth_user | default(omit) }}"
+    password: "{{ consul_basic_auth_password | default(omit) }}"
+    body: "{{ lookup('template', consul_pushgateway_template) }}"
+    body_format: json
+  become: false
+  delegate_to: localhost
+  when: pushgateway_do_not_add_service_to_consul is not defined or (pushgateway_do_not_add_service_to_consul is defined and pushgateway_do_not_add_service_to_consul == false)
+
+- name: PUSHGATEWAY TASK | Ensure That the Directory for Custom Scripts Exists
+  file:
+    path: "{{ pushgateway_custom_scripts_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  when: upload_pushgateway_custom_scripts is defined and upload_pushgateway_custom_scripts == true
+
+- name: PUSHGATEWAY TASK | Ensure That Custom Scripts Exist
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: "{{ item.mode }}"
+  with_items: "{{ pushgateway_custom_scripts }}"
+  when: upload_pushgateway_custom_scripts is defined and upload_pushgateway_custom_scripts == true
+
+- name: PUSHGATEWAY TASK | Ensure That SystemD Configs for Custom Scripts Exist
+  template:
+    src: "{{ pushgateway_custom_scripts_systemd_template }}"
+    dest: "/etc/systemd/system/{{ item.systemd_name }}.service"
+    owner: root
+    group: root
+    mode: "0644"
+  register: service
+  with_items: "{{ pushgateway_custom_scripts }}"
+  when: (upload_pushgateway_custom_scripts is defined and upload_pushgateway_custom_scripts == true) and (ansible_service_mgr == "systemd")
+
+- name: PUSHGATEWAY TASK | Enable Systemd Service
+  systemd:
+    daemon_reload: yes
+    name: "{{ item.systemd_name }}"
+    enabled: yes
+    state: restarted
+  when: binary.changed or service.changed

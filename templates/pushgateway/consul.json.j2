@@ -1,0 +1,11 @@
+{
+  "ID": "{{ inventory_hostname }}_pushgateway",
+  "Name": "{{ inventory_hostname }}_pushgateway",
+  "Tags": [
+    "prometheus-exporters",
+    "pushgateway",
+    "hostname-{{ inventory_hostname }}"
+  ],
+  "Address": "{{ ansible_host }}",
+  "Port": {{ pushgateway_port }}
+}
