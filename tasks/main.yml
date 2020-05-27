@@ -23,3 +23,7 @@
 - name: INCLUDE TASK | Install Stackdriver Exporter
   include_tasks: stackdriver_exporter.yml
   when: install_stackdriver_exporter is defined and install_stackdriver_exporter == true
+
+- name: INCLUDE TASK | Install Beats Exporter
+  include_tasks: beats_exporter.yml
+  when: install_beats_exporter is defined and install_beats_exporter == true
