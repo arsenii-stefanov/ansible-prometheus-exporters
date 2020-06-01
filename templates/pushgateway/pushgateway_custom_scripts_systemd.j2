@@ -1,0 +1,18 @@
+######################################
+###                                ###
+###       MANAGED BY ANSIBLE       ###
+###     (DO NOT EDIT MANUALLY)     ###
+###                                ###
+######################################
+
+[Unit]
+Description={{ item.systemd_description }}
+
+[Service]
+User={{ item.systemd_user }}
+Restart=always
+RestartSec={{ item.systemd_restart_every }}
+ExecStart={{ item.dest }}
+
+[Install]
+WantedBy=multi-user.target

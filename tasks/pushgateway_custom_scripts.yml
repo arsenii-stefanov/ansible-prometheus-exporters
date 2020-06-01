@@ -1,0 +1,39 @@
+---
+
+- name: PUSHGATEWAY TASK | Ensure That the Directory for Custom Scripts Exists
+  file:
+    path: "{{ pushgateway_custom_scripts_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: PUSHGATEWAY CUSTOM SCRIPTS TASK | Ensure That Custom Scripts Exist
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: "{{ item.mode }}"
+  register: script_file
+  with_items: "{{ pushgateway_custom_scripts }}"
+
+- name: PUSHGATEWAY CUSTOM SCRIPTS TASK | Ensure That SystemD Configs for Custom Scripts Exist
+  template:
+    src: "{{ pushgateway_custom_scripts_systemd_template }}"
+    dest: "/etc/systemd/system/{{ item.systemd_name }}.service"
+    owner: root
+    group: root
+    mode: "0644"
+  register: script_service
+  with_items: "{{ pushgateway_custom_scripts }}"
+  when: (ansible_service_mgr == "systemd") and (item.systemd_name is defined and item.systemd_name != "")
+
+- name: PUSHGATEWAY CUSTOM SCRIPTS TASK | Enable Systemd Service
+  systemd:
+    daemon_reload: yes
+    name: "{{ item.systemd_name }}"
+    enabled: yes
+    state: restarted
+  when: script_file.changed or script_service.changed
+  with_items: "{{ pushgateway_custom_scripts }}"

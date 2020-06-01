@@ -18,6 +18,7 @@ consul_blackbox_exporter_template_server: "blackbox_exporter/consul_icmp.json.j2
 consul_blackbox_exporter_template_site: "blackbox_exporter/consul_http.json.j2"
 consul_mysql_exporter_template: "mysql_exporter/consul.json.j2"
 consul_mysql_exporter_docker_template: "mysql_exporter/consul_docker.json.j2"
+consul_pushgateway_template: "pushgateway/consul.json.j2"
 
 #############################
 ###     NODE EXPORTER     ###
@@ -27,7 +28,7 @@ node_textfile_collector_directory: "/var/lib/node_exporter/textfile_collector"
 node_textfile_collector_cron_jobs: ""
 node_exporter_port: 9100
 node_exporter_binary: "/usr/sbin/node_exporter"
-node_exporter_agrs: '--collector.diskstats.ignored-devices="^(ram|loop|fd|(h|s|v|xv)|nvme\\d+n\\d+p)\\d+$"  --collector.filesystem.ignored-fs-types="^(sys|proc|auto)fs$"  --collector.filesystem.ignored-mount-points="^/(sys|proc|dev|snap)($|/)" --collector.textfile.directory="{{ node_textfile_collector_directory }}" --web.listen-address=0.0.0.0:{{ node_exporter_port }}'
+node_exporter_agrs: '--collector.diskstats.ignored-devices="^(ram|loop|fd|(h|s|v|xv)|nvme\\d+n\\d+p)\\d+$"  --collector.filesystem.ignored-fs-types="^(sys|proc|auto)fs$"  --collector.filesystem.ignored-mount-points="^/(sys|proc|dev|snap)($|/)" --collector.textfile.directory="{{ node_textfile_collector_directory }}" --web.listen-address=0.0.0.0:{{ node_exporter_port }} --collector.systemd'
 node_exporter_systemd_config: "node_exporter/node_exporter_systemd.j2"
 node_exporter_initd_config: "node_exporter/node_exporter_initd.j2"
 
@@ -46,3 +47,29 @@ mysql_exporter_target_port: 3306
 mysql_exporter_target_protocol: tcp
 mysql_exporter_user: ""
 mysql_exporter_password: ""
+
+###########################
+###     PUSHGATEWAY     ###
+###########################
+pushgateway_version: "1.2.0"
+
+pushgateway_tar_url: "https://github.com/prometheus/pushgateway/releases/download/v{{ pushgateway_version }}/pushgateway-{{ pushgateway_version }}.linux-amd64.tar.gz"
+pushgateway_addr: "127.0.0.1"
+pushgateway_port: "9091"
+pushgateway_binary: "/usr/sbin/pushgateway"
+pushgateway_agrs: "--web.listen-address 0.0.0.0:{{ pushgateway_port }} --log.level=info"
+pushgateway_url: "http://{{ pushgateway_addr }}:{{ pushgateway_port }}"
+pushgateway_systemd_config: "pushgateway/pushgateway_systemd.j2"
+pushgateway_initd_config: "pushgateway/pushgateway_initd.j2"
+pushgateway_custom_scripts_dir: "/usr/local/scripts"
+pushgateway_custom_scripts_systemd_template: "pushgateway/pushgateway_custom_scripts_systemd.j2"
+
+# Pushgateway Docker
+pushgateway_docker_opts: [
+  {
+    container_name: "prometheus-pushgateway",
+    image_name: "prom/pushgateway",
+    image_tag: "v{{ pushgateway_version }}",
+    ports: "0.0.0.0:{{ pushgateway_port }}:9091"
+  }
+]
