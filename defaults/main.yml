@@ -28,7 +28,7 @@ node_textfile_collector_directory: "/var/lib/node_exporter/textfile_collector"
 node_textfile_collector_cron_jobs: ""
 node_exporter_port: 9100
 node_exporter_binary: "/usr/sbin/node_exporter"
-node_exporter_agrs: '--collector.diskstats.ignored-devices="^(ram|loop|fd|(h|s|v|xv)|nvme\\d+n\\d+p)\\d+$"  --collector.filesystem.ignored-fs-types="^(sys|proc|auto)fs$"  --collector.filesystem.ignored-mount-points="^/(sys|proc|dev|snap)($|/)" --collector.textfile.directory="{{ node_textfile_collector_directory }}" --web.listen-address=0.0.0.0:{{ node_exporter_port }} --collector.systemd'
+node_exporter_agrs: '--collector.diskstats.ignored-devices="^(ram|loop|fd|(h|s|v|xv)|nvme\\d+n\\d+p)\\d+$"  --collector.filesystem.ignored-fs-types="^(sys|proc|auto)fs$|^overlay$"  --collector.filesystem.ignored-mount-points="^/(sys|proc|dev|snap)($|/)" --collector.textfile.directory="{{ node_textfile_collector_directory }}" --web.listen-address=0.0.0.0:{{ node_exporter_port }} --collector.systemd'
 node_exporter_systemd_config: "node_exporter/node_exporter_systemd.j2"
 node_exporter_initd_config: "node_exporter/node_exporter_initd.j2"
 
