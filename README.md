@@ -313,5 +313,48 @@ mysql_exporter_password: qwerty12345
   version: master
 ```
 
+> Prometheus Pushgateway Variables:
+
+Prometheus Pushgateway is used in cases when you would like to collect some custom metrics but there is no Prometheus Exporter for them (although it is always better to write one by yourself). Basically, it is a temporary storage for metrics sent by your custom scripts (via a POST request), it also has an HTTP endpoint that accepts GET requests so your Prometheus server can scrape metrics from it
+
+* Install it on particular servers `FILE: {{ playbook_dir }}/host_vars/some-server-1; {{ playbook_dir }}/host_vars/some-server-2, etc.`
+
+```
+install_pushgateway: true
+pushgateway_installation_type: "host"        # available options: "host"/"docker"
+upload_pushgateway_custom_scripts: true    # set to "true" if you would like to have your custom scripts uploaded to the servers 
+```
+
+* Install on all servers in your inventory file  `FILE: {{ playbook_dir }}/vars/prometheus-exporters.yml`
+
+```
+install_pushgateway: true
+pushgateway_installation_type: "host"        # available options: "host"/"docker"
+upload_pushgateway_custom_scripts: true    # set to "true" if you would like to have your custom scripts uploaded to the servers
+```
+
+* Add a list of your custom scripts `FILE: {{ playbook_dir }}/vars/prometheus-exporters.yml`
+
+```
+pushgateway_version: "1.2.0"    # used for both the Docker image and tar.gz compressed binary
+```
+
+It is desirable to have custom scripts for monitoring run as SystemD services (see templates/pushgateway/pushgateway_systemd.j2). If you would not like the scripts to be managed by SystemD, simply omit the 'item.systemd_name' variable or set it to an empty value
+
+```
+pushgateway_custom_scripts: [
+  {
+    src: "{{ playbook_dir }}/config-templates/prometheus-pushgateway/scripts/top.sh",
+    dest: "{{ pushgateway_custom_scripts_dir }}/top.sh",
+    owner: "root",
+    group: "root",
+    mode: "0755",
+    systemd_name: "pushgateway-top",
+    systemd_description: "Pushgateway Top",
+    systemd_user: "root",
+    systemd_restart_every: "3s"
+  }
+]
+```
 
 #### You can override any variable defined in the 'defaults/main.yml'
