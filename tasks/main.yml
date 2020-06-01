@@ -28,6 +28,10 @@
   include_tasks: pushgateway_docker.yml
   when: (install_pushgateway is defined and install_pushgateway == true) and (pushgateway_installation_type is defined and pushgateway_installation_type == 'docker')
 
+- name: INCLUDE TASK | Upload Custom Scripts for PushGateway
+  include_tasks: pushgateway_custom_scripts.yml
+  when: (install_pushgateway is defined and install_pushgateway == true) and (upload_pushgateway_custom_scripts is defined and upload_pushgateway_custom_scripts == true)
+
 - name: INCLUDE TASK | Install Stackdriver Exporter
   include_tasks: stackdriver_exporter.yml
   when: install_stackdriver_exporter is defined and install_stackdriver_exporter == true
