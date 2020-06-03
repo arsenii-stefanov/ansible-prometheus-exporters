@@ -32,6 +32,10 @@
   include_tasks: pushgateway_custom_scripts.yml
   when: (install_pushgateway is defined and install_pushgateway == true) and (upload_pushgateway_custom_scripts is defined and upload_pushgateway_custom_scripts == true)
 
+- name: INCLUDE TASK | Install Prometheus OpenVPN Exporter
+  include_tasks: openvpn-exporter.yml
+  when: (install_openvpn_exporter is defined and install_openvpn_exporter == true) and (openvpn_exporter_installation_type is defined and openvpn_exporter_installation_type == 'host')
+
 - name: INCLUDE TASK | Install Stackdriver Exporter
   include_tasks: stackdriver_exporter.yml
   when: install_stackdriver_exporter is defined and install_stackdriver_exporter == true

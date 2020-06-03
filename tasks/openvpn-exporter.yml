@@ -1,0 +1,64 @@
+---
+
+- name: OPENVPN EXPORTER TASK | Download OpenVPN Exporter
+  get_url:
+    url: "{{ openvpn_exporter_tar_url }}"
+    dest: "/tmp/openvpn_exporter.tar.gz"
+    mode: "0644"
+
+- name: OPENVPN EXPORTER TASK | Extract Archive
+  unarchive:
+    src: "/tmp/openvpn_exporter.tar.gz"
+    dest: "/usr/sbin"
+    remote_src: true
+    extra_opts:
+    - "--strip-components=1"
+    - "--wildcards"
+    - "*/openvpn_exporter"
+  register: binary
+
+- name: OPENVPN EXPORTER | Ensure That Systemd Service Exists
+  template:
+    src: "{{ openvpn_exporter_systemd_config }}"
+    dest: /etc/systemd/system/openvpn_exporter.service
+    owner: root
+    group: root
+    mode: "0644"
+  register: service
+  when: ansible_service_mgr == "systemd"
+
+- name: OPENVPN EXPORTER TASK | Enable Systemd Service
+  systemd:
+    daemon_reload: yes
+    name: openvpn_exporter
+    enabled: yes
+    state: restarted
+  when: binary.changed or service.changed
+
+- name: OPENVPN EXPORTER TASK | Ensure That Initd Service Exists
+  template:
+    src: "{{ openvpn_exporter_initd_config }}"
+    dest: /etc/init.d/openvpn_exporter
+    owner: root
+    group: root
+    mode: "0644"
+  register: service
+  when: ansible_service_mgr != "systemd"
+
+- name: OPENVPN EXPORTER TASK | Restart the Initd Service
+  service:
+    name: openvpn_exporter
+    state: restarted
+  when: (ansible_service_mgr != "systemd" and binary.changed) or (ansible_service_mgr != "systemd" and service.changed)
+  
+- name: OPENVPN EXPORTER TASK | Add Services to Consul
+  uri:
+    url: "{{ consul_url }}/v1/agent/service/register"
+    method: PUT
+    user: "{{ consul_basic_auth_user | default(omit) }}"
+    password: "{{ consul_basic_auth_password | default(omit) }}"
+    body: "{{ lookup('template', consul_openvpn_exporter_template) }}"
+    body_format: json
+  become: false
+  delegate_to: localhost
+  when: openvpn_exporter_do_not_add_service_to_consul is not defined or (openvpn_exporter_do_not_add_service_to_consul is defined and openvpn_exporter_do_not_add_service_to_consul == false)
