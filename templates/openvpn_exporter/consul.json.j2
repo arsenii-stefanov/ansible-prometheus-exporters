@@ -1,0 +1,11 @@
+{
+  "ID": "{{ inventory_hostname }}_openvpn_exporter",
+  "Name": "{{ inventory_hostname }}_openvpn_exporter",
+  "Tags": [
+    "prometheus-exporters",
+    "openvpn_exporter",
+    "hostname-{{ inventory_hostname }}"
+  ],
+  "Address": "{{ ansible_host }}",
+  "Port": {{ openvpn_exporter_port }}
+}

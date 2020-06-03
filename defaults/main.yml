@@ -19,6 +19,7 @@ consul_blackbox_exporter_template_site: "blackbox_exporter/consul_http.json.j2"
 consul_mysql_exporter_template: "mysql_exporter/consul.json.j2"
 consul_mysql_exporter_docker_template: "mysql_exporter/consul_docker.json.j2"
 consul_pushgateway_template: "pushgateway/consul.json.j2"
+consul_openvpn_exporter_template: "openvpn_exporter/consul.json.j2"
 
 #############################
 ###     NODE EXPORTER     ###
@@ -73,3 +74,17 @@ pushgateway_docker_opts: [
     ports: "0.0.0.0:{{ pushgateway_port }}:9091"
   }
 ]
+
+
+################################
+###     OPENVPN EXPORTER     ###
+################################
+openvpn_exporter_version: "0.2.1"
+openvpn_server_status_file_path: "/etc/openvpn/openvpn-status.log"
+
+openvpn_exporter_tar_url: ""
+openvpn_exporter_port: "9176"
+openvpn_exporter_binary: "/usr/sbin/openvpn_exporter"
+openvpn_exporter_agrs: "-openvpn.status_paths {{ openvpn_server_status_file_path }} -web.listen-address 0.0.0.0:{{ openvpn_exporter_port }} -web.telemetry-path /metrics"
+openvpn_exporter_systemd_config: "openvpn_exporter/openvpn_exporter_systemd.j2"
+openvpn_exporter_initd_config: "openvpn_exporter/openvpn_exporter_initd.j2"
