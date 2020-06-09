@@ -5,7 +5,8 @@
     "prometheus-exporters",
     "node_exporter",
     "hostname-{{ inventory_hostname }}",
-    "cpu100-{{ cpu100 | default('false') }}"
+    "cpu100-{{ cpu100 | default('false') }}",
+    "ram100-{{ ram100 | default('false') }}"
   ],
   "Address": "{{ ansible_host }}",
   "Port": {{ node_exporter_port }}
